@@ -19,7 +19,7 @@ jobs:
       # Checkout the repo
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.head_ref }}
       # Setup node
       - uses: actions/setup-node@v4
         with:
