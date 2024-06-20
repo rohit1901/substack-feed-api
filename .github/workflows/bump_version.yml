@@ -1,0 +1,68 @@
+name: Bump version, commit and push tag
+# This workflow is triggered when a PR is opened or reopened on the main branch
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - 'main'
+jobs:
+  bump_version:
+    # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
+    if: ${{ github.event.pull_request.head.ref }} == 'release/patch' || ${{ github.event.pull_request.head.ref }} == 'release/minor' || ${{ github.event.pull_request.head.ref }} == 'release/major'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        node-version: [ 20.x ]
+    steps:
+      # Checkout the repo
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      # Setup node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      # Install dependencies
+      - run: npm install
+      # Get the current version from package.json
+      - name: Get the current version from package.json
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+      # Print the current version
+      - run: echo "The current version is ${{ steps.package-version.outputs.current-version }}"
+      # Match branch name
+      - name: Match branch name
+        run: |
+          if ${{ github.event.pull_request.head.ref  == 'release/patch' }}; then
+            echo "RELEASE_TYPE=patch" >> $GITHUB_ENV
+          elif ${{ github.event.pull_request.head.ref == 'release/minor' }}; then
+            echo "RELEASE_TYPE=minor" >> $GITHUB_ENV
+          elif ${{ github.event.pull_request.head.ref == 'release/major' }}; then
+            echo "RELEASE_TYPE=major" >> $GITHUB_ENV
+          fi
+      - run: echo "The release type is ${{ env.RELEASE_TYPE }}"
+      # Bump version and provide new version as output
+      - name: Bump version (Dry run)
+        id: version-bump-dry-run
+        if: ${{ success() }}
+        uses: anothrNick/github-tag-action@1.67.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: ${{ env.RELEASE_TYPE }}
+          DRY_RUN: true
+          INITIAL_VERSION: ${{ steps.package-version.outputs.current-version }}
+          DEFAULT_BRANCH: ${{ github.event.pull_request.head.ref }}
+      # Update package.json with the new version
+      - name: package.json info
+        id: info
+        uses: jaywcjlove/github-action-package@main
+        with:
+          version: ${{ steps.version-bump-dry-run.outputs.new_tag }}
+      # Commit changes
+      - name: Commit changes using git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v5
+        id: auto-commit-action
+        with:
+          commit_message: updated package.json
