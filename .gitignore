@@ -1,0 +1,26 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+
