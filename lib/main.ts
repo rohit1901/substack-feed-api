@@ -8,7 +8,7 @@ const CORS_PROXY = "https://corsproxy.io/?";
 
 const getRawXMLSubstackFeed = async (feedUrl: string) => {
   try {
-    const promise = await fetch(`${CORS_PROXY}${encodeURIComponent(feedUrl)}`);
+                  const promise = await fetch(`${CORS_PROXY}${encodeURIComponent(feedUrl)}`);
     if (promise.ok) return promise.text();
   } catch (e) {
     throw new Error("Error occurred fetching Feed from Substack");
