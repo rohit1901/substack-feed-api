@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     strategy:
       matrix:
         node-version: [ 20.x ]
@@ -19,7 +20,7 @@ jobs:
       # Checkout the repo
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
       # Setup node
       - uses: actions/setup-node@v4
         with:
