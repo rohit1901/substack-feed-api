@@ -45,6 +45,6 @@ jobs:
       # Publish to NPM
       - name: Publish to NPM
         if: ${{ success() }}
-        run: cd packages/boom-router-react && npm publish --access public
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TOKEN}}
