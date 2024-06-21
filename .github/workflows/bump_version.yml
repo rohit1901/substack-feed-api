@@ -67,3 +67,5 @@ jobs:
         id: auto-commit-action
         with:
           commit_message: updated package.json
+          branch: ${{ github.event.pull_request.head.ref }}
+          push_options: '--force'
