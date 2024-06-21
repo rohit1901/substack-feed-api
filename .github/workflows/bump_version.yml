@@ -3,8 +3,7 @@ name: Bump version, commit and push tag
 on:
   pull_request:
     types: [opened, reopened]
-    branches:
-      - 'main'
+    branches: [main]
 jobs:
   bump_version:
     # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
@@ -19,6 +18,8 @@ jobs:
     steps:
       # Checkout the repo
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       # Setup node
       - uses: actions/setup-node@v4
         with:
@@ -65,5 +66,4 @@ jobs:
         id: auto-commit-action
         with:
           commit_message: updated package.json
-          branch: ${{ github.event.pull_request.head.ref }}
           push_options: '--force'
