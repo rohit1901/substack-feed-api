@@ -19,8 +19,6 @@ jobs:
     steps:
       # Checkout the repo
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
       # Setup node
       - uses: actions/setup-node@v4
         with:
