@@ -16,11 +16,11 @@ jobs:
         node-version: [ 20.x ]
     steps:
       # Checkout the repo
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with :
           ref: ${{ github.refs }}
       # Setup node
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           # Add the registry URL to publish to NPM (optional)
