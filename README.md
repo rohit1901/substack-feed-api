@@ -40,7 +40,7 @@ Here's a quick example to get you started:
 const api = new SubstackFeedApi();
 
 api.fetchNewsletter('your-substack-newsletter-name').then(feed => {
-  console.log(feed);
+  console.info(feed);
 }).catch(error => {
   console.error('Error fetching newsletter:', error);
 });
