@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - 'release/*'
+  workflow_call:
 jobs:
   bump_version:
     # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
@@ -66,5 +67,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         id: auto-commit-action
         with:
-          commit_message: updated package.json
-          push_options: '--force'
+          commit_message: updated package.json version to ${{ steps.version-bump-dry-run.outputs.new_tag }}
