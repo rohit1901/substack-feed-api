@@ -1,4 +1,7 @@
 name: CI
+# This workflow is triggered on push to the main branch.
+# It uses the npm-get-version-action to get the current version from package.json and creates a GitHub release from the latest tag.
+# It also publishes the package to NPM.
 on:
   push:
     branches:

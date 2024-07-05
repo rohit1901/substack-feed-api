@@ -1,13 +1,15 @@
 name: Bump version, commit and push tag
-# This workflow is triggered when a PR is opened or reopened on the main branch
+# This workflow is triggered on push to a release branch (release/patch, release/minor, release/major).
+# It uses the npm-get-version-action to get the current version from package.json and bumps the version based on the branch name.
+# It also commits the changes made to package.json and pushes the tag to the repository.
 on:
-  pull_request:
-    types: [opened, reopened]
-    branches: [main]
+  push:
+    branches:
+      - 'release/*'
 jobs:
   bump_version:
     # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
-    if: ${{ github.event.pull_request.head.ref }} == 'release/patch' || ${{ github.event.pull_request.head.ref }} == 'release/minor' || ${{ github.event.pull_request.head.ref }} == 'release/major'
+    if: ${{ github.head_ref == 'release/patch' || github.head_ref == 'release/minor' || github.head_ref == 'release/major' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,7 +21,7 @@ jobs:
       # Checkout the repo
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.head_ref }}
       # Setup node
       - uses: actions/setup-node@v4
         with:
@@ -35,11 +37,11 @@ jobs:
       # Match branch name
       - name: Match branch name
         run: |
-          if ${{ github.event.pull_request.head.ref  == 'release/patch' }}; then
+          if ${{ github.head_ref  == 'release/patch' }}; then
             echo "RELEASE_TYPE=patch" >> $GITHUB_ENV
-          elif ${{ github.event.pull_request.head.ref == 'release/minor' }}; then
+          elif ${{ github.head_ref == 'release/minor' }}; then
             echo "RELEASE_TYPE=minor" >> $GITHUB_ENV
-          elif ${{ github.event.pull_request.head.ref == 'release/major' }}; then
+          elif ${{ github.head_ref == 'release/major' }}; then
             echo "RELEASE_TYPE=major" >> $GITHUB_ENV
           fi
       - run: echo "The release type is ${{ env.RELEASE_TYPE }}"
@@ -53,7 +55,7 @@ jobs:
           DEFAULT_BUMP: ${{ env.RELEASE_TYPE }}
           DRY_RUN: true
           INITIAL_VERSION: ${{ steps.package-version.outputs.current-version }}
-          DEFAULT_BRANCH: ${{ github.event.pull_request.head.ref }}
+          DEFAULT_BRANCH: ${{ github.head_ref }}
       # Update package.json with the new version
       - name: package.json info
         id: info

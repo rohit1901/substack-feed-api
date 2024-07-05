@@ -1,4 +1,6 @@
 name: Test and format
+# This workflow is triggered on push to any feature branch. It runs tests, lints, formats, and builds the project.
+# It also commits the changes made by the prettier formatter.
 on:
   push:
     branches:
