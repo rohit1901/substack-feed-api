@@ -31,13 +31,6 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-      # Get the current version from package.json
-      # Get the current version from package.json
-      - name: Get the current version from package.json
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-      # Print the current version
-      - run: echo "The current version is ${{ steps.package-version.outputs.current-version }}"
       # Match branch name
       - name: Match branch name
         run: |
