@@ -18,50 +18,37 @@ jobs:
     steps:
       # Checkout the repo
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
       # Setup node
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      # Install dependencies
-      - run: npm install
-      # Setup Git user
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Setup Git user
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-      # Get the current version from package.json
-      # Get the current version from package.json
-      - name: Get the current version from package.json
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-      # Print the current version
-      - run: echo "The current version is ${{ steps.package-version.outputs.current-version }}"
-      # Match branch name
-      - name: Match branch name
+
+      - name: Check for uncommitted changes
         run: |
-          if ${{ github.ref_name  == 'release/patch' }}; then
-            echo "RELEASE_TYPE=patch" >> $GITHUB_ENV
-          elif ${{ github.ref_name == 'release/minor' }}; then
-            echo "RELEASE_TYPE=minor" >> $GITHUB_ENV
-          elif ${{ github.ref_name == 'release/major' }}; then
-            echo "RELEASE_TYPE=major" >> $GITHUB_ENV
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Uncommitted changes detected. Committing..."
+            git add .
+            git commit -m "Pre-version bump changes"
+          else
+            echo "Working directory clean. Proceeding with version bump."
           fi
-      - run: echo "The release type is ${{ env.RELEASE_TYPE }}"
-      # Update package.json with the new version
-      - name: package.json info
-        run: |
-          if ${{ github.ref_name  == 'release/patch' }}; then
-            npm run version:patch
-          elif ${{ github.ref_name == 'release/minor' }}; then
-            npm run version:minor
-          elif ${{ github.ref_name == 'release/major' }}; then
-            npm run version:major
-          fi
-      # Commit changes
-      - name: Commit changes using git-auto-commit-action@v5
-        uses: stefanzweifel/git-auto-commit-action@v5
-        id: auto-commit-action
-        with:
-          commit_message: updated package.json version
+
+      - name: Bump version patch
+        if: github.ref == 'refs/heads/release/patch'
+        run: npm run version:patch && git push --follow-tags
+
+      - name: Bump version minor
+        if: github.ref == 'refs/heads/release/minor'
+        run: npm run version:minor && git push --follow-tags
+
+      - name: Bump version major
+        if: github.ref == 'refs/heads/release/major'
+        run: npm run version:major && git push --follow-tags
