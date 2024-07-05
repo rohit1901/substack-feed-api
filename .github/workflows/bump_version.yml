@@ -9,7 +9,7 @@ on:
 jobs:
   bump_version:
     # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
-    if: ${{ github.ref == 'release/patch' || github.ref == 'release/minor' || github.ref == 'release/major' }}
+    if: ${{ github.ref_name == 'release/patch' || github.ref_name == 'release/minor' || github.ref_name == 'release/major' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,11 +37,11 @@ jobs:
       # Match branch name
       - name: Match branch name
         run: |
-          if ${{ github.ref  == 'release/patch' }}; then
+          if ${{ github.ref_name  == 'release/patch' }}; then
             echo "RELEASE_TYPE=patch" >> $GITHUB_ENV
-          elif ${{ github.ref == 'release/minor' }}; then
+          elif ${{ github.ref_name == 'release/minor' }}; then
             echo "RELEASE_TYPE=minor" >> $GITHUB_ENV
-          elif ${{ github.ref == 'release/major' }}; then
+          elif ${{ github.ref_name == 'release/major' }}; then
             echo "RELEASE_TYPE=major" >> $GITHUB_ENV
           fi
       - run: echo "The release type is ${{ env.RELEASE_TYPE }}"
