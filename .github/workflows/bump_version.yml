@@ -31,6 +31,16 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+      - name: Check for uncommitted changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Uncommitted changes detected. Committing..."
+            git add .
+            git commit -m "Pre-version bump changes"
+          else
+            echo "Working directory clean. Proceeding with version bump."
+          fi
+
       - name: Bump version patch
         if: github.ref == 'refs/heads/release/patch'
         run: npm run version:patch && git push --follow-tags
