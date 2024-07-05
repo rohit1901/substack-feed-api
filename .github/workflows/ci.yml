@@ -1,0 +1,53 @@
+name: CI
+# This workflow is triggered on push to the main branch.
+# It uses the npm-get-version-action to get the current version from package.json and creates a GitHub release from the latest tag.
+# It also publishes the package to NPM.
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        node-version: [ 20.x ]
+    steps:
+      # Checkout the repo
+      - uses: actions/checkout@v3
+        with :
+          ref: ${{ github.refs }}
+      # Setup node
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          # Add the registry URL to publish to NPM (optional)
+          registry-url: 'https://registry.npmjs.org'
+          # Add the scope of the package to publish to NPM (optional)
+          scope: '@rohit1901'
+      # Install dependencies
+      - name: Install dependencies
+        if: ${{ success() }}
+        run: npm install
+      # Get the current version from package.json
+      - name: Get the current version from package.json
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+      # Build the project
+      - name: Build the project
+        if: ${{ success() }}
+        run: npm run build
+      # Create a GitHub release
+      - name: Create a GitHub Release from the latest tag
+        if: ${{ success() }}
+        run: gh release create v${{ steps.package-version.outputs.current-version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Publish to NPM
+      - name: Publish to NPM
+        if: ${{ success() }}
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TOKEN}}

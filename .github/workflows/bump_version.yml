@@ -1,0 +1,67 @@
+name: Bump version, commit and push tag
+# This workflow is triggered on push to a release branch (release/patch, release/minor, release/major).
+# It uses the npm-get-version-action to get the current version from package.json and bumps the version based on the branch name.
+# It also commits the changes made to package.json and pushes the tag to the repository.
+on:
+  push:
+    branches:
+      - 'release/*'
+  workflow_call:
+jobs:
+  bump_version:
+    # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
+    if: ${{ github.ref_name == 'release/patch' || github.ref_name == 'release/minor' || github.ref_name == 'release/major' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 20.x ]
+    steps:
+      # Checkout the repo
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      # Setup node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      # Install dependencies
+      - run: npm install
+      # Setup Git user
+      - name: Setup Git user
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+      # Get the current version from package.json
+      # Get the current version from package.json
+      - name: Get the current version from package.json
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+      # Print the current version
+      - run: echo "The current version is ${{ steps.package-version.outputs.current-version }}"
+      # Match branch name
+      - name: Match branch name
+        run: |
+          if ${{ github.ref_name  == 'release/patch' }}; then
+            echo "RELEASE_TYPE=patch" >> $GITHUB_ENV
+          elif ${{ github.ref_name == 'release/minor' }}; then
+            echo "RELEASE_TYPE=minor" >> $GITHUB_ENV
+          elif ${{ github.ref_name == 'release/major' }}; then
+            echo "RELEASE_TYPE=major" >> $GITHUB_ENV
+          fi
+      - run: echo "The release type is ${{ env.RELEASE_TYPE }}"
+      # Update package.json with the new version
+      - name: package.json info
+        run: |
+          if ${{ github.ref_name  == 'release/patch' }}; then
+            npm run version:patch
+          elif ${{ github.ref_name == 'release/minor' }}; then
+            npm run version:minor
+          elif ${{ github.ref_name == 'release/major' }}; then
+            npm run version:major
+          fi
+      # Commit changes
+      - name: Commit changes using git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v5
+        id: auto-commit-action
+        with:
+          commit_message: updated package.json version
