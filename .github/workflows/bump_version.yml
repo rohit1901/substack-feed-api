@@ -47,11 +47,11 @@ jobs:
       - name: package.json info
         run: |
           if ${{ github.ref_name  == 'release/patch' }}; then
-            npm version patch
+            npm run version:patch
           elif ${{ github.ref_name == 'release/minor' }}; then
-            npm version minor
+            npm run version:minor
           elif ${{ github.ref_name == 'release/major' }}; then
-            npm version major
+            npm run version:major
           fi
       # Commit changes
       - name: Commit changes using git-auto-commit-action@v5
