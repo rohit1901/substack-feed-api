@@ -2,6 +2,10 @@
   "name": "substack-feed-api",
   "version": "1.0.2",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rohit1901/substack-feed-api.git"
+  },
   "files": [
     "dist",
     "index.d.ts"
