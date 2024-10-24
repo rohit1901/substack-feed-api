@@ -3,12 +3,13 @@ import { RawFeedChannel, RawItem, SubstackItem } from "./types";
 import { isRawFeed, isRawFeedChannel } from "./typeguards";
 
 const CORS_PROXY = "https://corsproxy.io/?";
+const isBrowser = typeof document !== 'undefined';
 
 // Internal API
-
 const getRawXMLSubstackFeed = async (feedUrl: string) => {
   try {
-    const promise = await fetch(`${CORS_PROXY}${encodeURIComponent(feedUrl)}`);
+    const uri = isBrowser ? `${CORS_PROXY}${encodeURIComponent(feedUrl)}` : feedUrl;
+    const promise = await fetch(uri);
     if (promise.ok) return promise.text();
   } catch (e) {
     throw new Error("Error occurred fetching Feed from Substack");
