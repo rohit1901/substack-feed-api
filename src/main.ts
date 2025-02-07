@@ -17,7 +17,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   </div>
 `;
 const SUBSTACK_FEED_URL = "https://rohitkhanduri.substack.com";
-getSubstackFeed(`${SUBSTACK_FEED_URL}/feed`, true, (err, rawRes) => {
+getSubstackFeed(`${SUBSTACK_FEED_URL}/feed`, (err, rawRes) => {
   if (err) throw err;
   const feedChannel = getFeedByLink(rawRes, SUBSTACK_FEED_URL);
   const posts = getPosts(feedChannel);

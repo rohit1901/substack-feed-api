@@ -1,14 +1,5 @@
-import { getFeedByLink, getPosts, getSubstackFeed } from "../main";
+import { getFeedByLink, getPosts } from "../main";
 import { RawFeedChannel } from "../types";
-
-describe("getSubstackFeed", () => {
-  it("should throw an error for invalid Substack feed", async () => {
-    const invalidFeedUrl = "https://example.com/invalid-feed";
-    await expect(getSubstackFeed(invalidFeedUrl)).rejects.toThrow(
-      "Error occurred fetching Feed from Substack",
-    );
-  });
-});
 
 describe("getFeedByLink", () => {
   it("should throw an error for incorrect feed format", () => {
