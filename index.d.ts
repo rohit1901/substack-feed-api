@@ -83,23 +83,10 @@ export type SubstackItem = {
   content: string;
 };
 
-export function isRawFeed(
-  feed: any,
-): feed is { rss: { channel: RawFeedChannel[] } };
-export function isRawFeedChannel(channel: any): channel is RawFeedChannel;
-
-export const CORS_PROXY: string;
-
-export function getRawXMLSubstackFeed(feedUrl: string): Promise<string>;
-export function parseXML(
-  xml?: string,
-  callback?: (err: Error | null, result: any) => void,
-): Promise<void>;
-export function transformRawItem(item: RawItem): SubstackItem;
-
 export function getSubstackFeed(
   feedUrl: string,
-  callback: (err: Error | null, result: any) => void,
-): Promise<void>;
-export function getFeedByLink(rawFeed: any, link: string): RawFeedChannel[];
+  proxy: boolean,
+  callback: (err: Error | null, result: unknown) => void,
+): Promise<string | undefined>;
+export function getFeedByLink(rawFeed: unknown, link: string): RawFeedChannel[];
 export function getPosts(channels: RawFeedChannel[]): SubstackItem[];
