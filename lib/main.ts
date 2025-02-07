@@ -41,7 +41,7 @@ export const getSubstackFeed = async (
   feedUrl: string,
   proxy = false,
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  callback?: (err: Error | null, result: any) => void,
+  callback?: (err: Error | null, result: unknown) => void,
 ): Promise<string | undefined> => {
   const rawXML = await getRawXMLSubstackFeed(feedUrl, proxy);
   if (!callback) return rawXML;

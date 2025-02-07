@@ -1,6 +1,6 @@
 {
   "name": "substack-feed-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "files": [
     "dist",
