@@ -29,7 +29,7 @@ npm install substack-feed-api
 2. Import the API into your project:
 
 ```typescript
-import { SubstackFeedApi } from 'substack-feed-api';
+import { getSubstackFeed } from 'substack-feed-api';
 ```
 
 ### Usage
@@ -37,14 +37,27 @@ import { SubstackFeedApi } from 'substack-feed-api';
 Here's a quick example to get you started:
 
 ```typescript
-const api = new SubstackFeedApi();
+getSubstackFeed('your-substack-newsletter-name')
+  .then((feed) => {
+    console.log(feed);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+```
 
-api.fetchNewsletter('your-substack-newsletter-name').then(feed => {
-  console.info(feed);
-}).catch(error => {
-  console.error('Error fetching newsletter:', error);
+There is also a possibility to pass your own callback function to the `getSubstackFeed` function.
+This function will be called with the parsed feed data as an argument:
+
+```typescript
+getSubstackFeed('your-substack-newsletter-name', (err, result) => {
+  console.log(result);
 });
 ```
+
+You can also use the other exported functions from the package:
+- `getFeedByLink`: Fetch a specific feed by its link.
+- `getPosts`: Get all posts from a feed.
 
 Replace `'your-substack-newsletter-name'` with the name of the Substack newsletter you wish to fetch.
 
