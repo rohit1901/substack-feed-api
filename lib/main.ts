@@ -1,5 +1,5 @@
 import * as parser from "xml2js";
-import { isRawFeed, isRawFeedChannel } from "./typeguards";
+import { isRawFeed, isRawFeedChannel, isValidSubstackFeed } from "./typeguards";
 import { RawFeedChannel, RawItem, SubstackItem } from "./types";
 
 const CORS_PROXY = "https://api.allorigins.win/get?url=";
@@ -12,7 +12,7 @@ const getRawXMLSubstackFeed = async (feedUrl: string, proxy = false) => {
       ? `${CORS_PROXY}${encodeURIComponent(feedUrl)}`
       : feedUrl;
     const promise = await fetch(path);
-    if (promise.ok) return promise.text();
+    if (promise.ok) return promise.json();
   } catch (e) {
     throw new Error("Error occurred fetching Feed from Substack");
   }
@@ -44,8 +44,10 @@ export const getSubstackFeed = async (
   callback?: (err: Error | null, result: unknown) => void,
 ): Promise<string | undefined> => {
   const rawXML = await getRawXMLSubstackFeed(feedUrl, proxy);
+  if (!isValidSubstackFeed(rawXML))
+    throw new Error("Error occurred fetching Feed from Substack");
   if (!callback) return rawXML;
-  await parseXML(rawXML, callback);
+  await parseXML(rawXML.contents, callback);
 };
 export const getFeedByLink = (
   rawFeed: unknown,
