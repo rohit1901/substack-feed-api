@@ -85,8 +85,8 @@ export type SubstackItem = {
 
 export function getSubstackFeed(
   feedUrl: string,
-  proxy: boolean,
-  callback: (err: Error | null, result: unknown) => void,
+  proxy?: boolean,
+  callback?: (err: Error | null, result: unknown) => void,
 ): Promise<string | undefined>;
 export function getFeedByLink(rawFeed: unknown, link: string): RawFeedChannel[];
 export function getPosts(channels: RawFeedChannel[]): SubstackItem[];
