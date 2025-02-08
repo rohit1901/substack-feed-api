@@ -13,7 +13,6 @@ const getRawXMLSubstackFeed = async (feedUrl: string) => {
       ? `${CORS_PROXY}${encodeURIComponent(feedUrl)}`
       : feedUrl;
     const promise = await fetch(path);
-    console.log(`isBrowser - ${isBrowser}, path - ${path}`);
     if (promise.ok) return isBrowser ? promise.json() : promise.text();
   } catch (e) {
     throw new Error("Error occurred fetching Feed from Substack");
@@ -46,7 +45,6 @@ export const getSubstackFeed = async (
   callback?: (err: Error | null, result: unknown) => void,
 ): Promise<unknown> => {
   const rawXML = await getRawXMLSubstackFeed(feedUrl);
-  console.log(`rawXML - ${rawXML}`);
   // NOTE: server side call
   if (!isBrowser) {
     return parseXML(rawXML, callback);
