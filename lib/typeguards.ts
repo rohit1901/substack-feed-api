@@ -160,3 +160,7 @@ export const isEnclosure = (data: any): data is Enclosure => {
     typeof data.$.type === "string"
   );
 };
+
+export const isValidSubstackFeed = (data: any): boolean => {
+  return data && data.contents && data.status.http_code == 200;
+};

@@ -1,18 +1,19 @@
 import * as parser from "xml2js";
-import { isRawFeed, isRawFeedChannel } from "./typeguards";
+import { isRawFeed, isRawFeedChannel, isValidSubstackFeed } from "./typeguards";
 import { RawFeedChannel, RawItem, SubstackItem } from "./types";
 
 const CORS_PROXY = "https://api.allorigins.win/get?url=";
+const isBrowser = typeof document !== "undefined";
 
 // Internal API
 
-const getRawXMLSubstackFeed = async (feedUrl: string, proxy = false) => {
+const getRawXMLSubstackFeed = async (feedUrl: string) => {
   try {
-    const path = proxy
+    const path = isBrowser
       ? `${CORS_PROXY}${encodeURIComponent(feedUrl)}`
       : feedUrl;
     const promise = await fetch(path);
-    if (promise.ok) return promise.text();
+    if (promise.ok) return isBrowser ? promise.json() : promise.text();
   } catch (e) {
     throw new Error("Error occurred fetching Feed from Substack");
   }
@@ -39,13 +40,20 @@ const transformRawItem = (item: RawItem): SubstackItem => {
 
 export const getSubstackFeed = async (
   feedUrl: string,
-  proxy = false,
   /* eslint-disable @typescript-eslint/no-explicit-any */
   callback?: (err: Error | null, result: unknown) => void,
 ): Promise<string | undefined> => {
-  const rawXML = await getRawXMLSubstackFeed(feedUrl, proxy);
+  const rawXML = await getRawXMLSubstackFeed(feedUrl);
   if (!callback) return rawXML;
-  await parseXML(rawXML, callback);
+  // NOTE: server side call
+  if (!isBrowser) {
+    await parseXML(rawXML, callback);
+    return;
+  }
+  // NOTE: client side call
+  if (!isValidSubstackFeed(rawXML))
+    throw new Error("Error occurred fetching Feed from Substack");
+  await parseXML(rawXML.contents, callback);
 };
 export const getFeedByLink = (
   rawFeed: unknown,
