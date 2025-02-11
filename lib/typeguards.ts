@@ -202,6 +202,7 @@ export const isRawGoodreadsItem = (item: unknown): item is RawGoodreadsItem => {
     item.hasOwnProperty("title") &&
     item.hasOwnProperty("link") &&
     item.hasOwnProperty("book_image_url") &&
+    item.hasOwnProperty("book_large_image_url") &&
     item.hasOwnProperty("author_name") &&
     item.hasOwnProperty("book_description")
   );
