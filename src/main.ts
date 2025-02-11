@@ -1,4 +1,10 @@
-import { getFeedByLink, getPosts, getSubstackFeed } from "../lib/main.ts";
+import {
+  getFeedByLink,
+  getGoodreadsFeed,
+  getGoodreadsFeedItems,
+  getPosts,
+  getSubstackFeed,
+} from "../lib/main.ts";
 import viteLogo from "../public/vite.svg";
 import "./style.css";
 import typescriptLogo from "./typescript.svg";
@@ -34,3 +40,10 @@ getSubstackFeed(`${SUBSTACK_FEED_URL}/feed`, (err, rawRes) => {
     document.querySelector<HTMLDivElement>("#app")!.appendChild(post);
   });
 }).catch((err) => console.error(err));
+getGoodreadsFeed(
+  "https://www.goodreads.com/review/list_rss/161866901?key=i4wH3ZD_K1LIZ7duOLVsiUWcyhW-fGCsox5koyQTJIUuwzwO&shelf=read",
+  (err, data) => {
+    if (err) throw err;
+    return getGoodreadsFeedItems(data);
+  },
+);
