@@ -94,14 +94,14 @@ export function getPosts(channels: RawFeedChannel[]): SubstackItem[];
 // Goodreads RSS Feed Parser
 
 // Goodreads Public Types
-export interface GoodreadsItem {
-  title: string[];
-  link: string[];
-  book_image_url: string[];
-  author_name: string[];
-  book_description: string[];
+export type GoodreadsItem = {
+  title: string;
+  link: string;
+  book_image_url: string;
+  author_name: string;
+  book_description: string;
   [key: string]: unknown;
-}
+};
 
 // Goodreads Public API
 export const getGoodreadsFeed: (
