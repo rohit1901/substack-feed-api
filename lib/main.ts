@@ -17,7 +17,7 @@ import {
   SubstackItem,
 } from "./types";
 
-const CORS_PROXY = "https://api.allorigins.win/get?url=";
+const CORS_PROXY = "https://www.whateverorigin.org/get?url=";
 const isBrowser = typeof document !== "undefined";
 
 // Internal API
@@ -95,16 +95,16 @@ const transformRawGoodreadsItem = (item: RawGoodreadsItem): GoodreadsItem => {
   return {
     title: item.title[0],
     link: item.link[0],
-    book_image_url: item["book_image_url"][0],
+    book_image_url: item["book_large_image_url"][0],
     author_name: item["author_name"][0],
     book_description: item["book_description"][0],
   };
 };
 // Internal API
-const getRawXMLGoodreadsFeed = async (feedUrl: string) => {
+const getRawXMLGoodreadsFeed = async (feedUrl: string, proxy?: string) => {
   try {
     const path = isBrowser
-      ? `${CORS_PROXY}${encodeURIComponent(feedUrl)}`
+      ? `${proxy ?? CORS_PROXY}${encodeURIComponent(feedUrl)}`
       : feedUrl;
     const promise = await fetch(path);
     if (promise.ok) return isBrowser ? promise.json() : promise.text();
@@ -118,8 +118,9 @@ export const getGoodreadsFeed = async (
   feedUrl: string,
   /* eslint-disable @typescript-eslint/no-explicit-any */
   callback?: (err: Error | null, result: unknown) => void,
+  proxy?: string,
 ): Promise<unknown> => {
-  const rawXML = await getRawXMLGoodreadsFeed(feedUrl);
+  const rawXML = await getRawXMLGoodreadsFeed(feedUrl, proxy);
   // NOTE: server side call
   if (!isBrowser) {
     return parseXML(rawXML, callback);

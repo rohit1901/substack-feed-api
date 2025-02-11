@@ -105,6 +105,7 @@ export type RawGoodreadsItem = {
   title: string[];
   link: string[];
   book_image_url: string[];
+  book_large_image_url: string[];
   author_name: string[];
   book_description: string[];
   [key: string]: unknown;
