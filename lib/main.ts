@@ -17,7 +17,7 @@ import {
   SubstackItem,
 } from "./types";
 
-const CORS_PROXY = "https://www.whateverorigin.org/get?url=";
+const CORS_PROXY = "https://lol-origin-84f24d4beb26.herokuapp.com/get?url=";
 const isBrowser = typeof document !== "undefined";
 
 // Internal API
@@ -29,7 +29,8 @@ const getRawXMLSubstackFeed = async (feedUrl: string) => {
       : feedUrl;
     const promise = await fetch(path);
     if (promise.ok) return isBrowser ? promise.json() : promise.text();
-  } catch (e) {
+  } catch (error) {
+    console.error(error);
     throw new Error("Error occurred fetching Feed from Substack");
   }
 };
@@ -56,7 +57,6 @@ const transformRawItem = (item: RawItem): SubstackItem => {
 
 export const getSubstackFeed = async (
   feedUrl: string,
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   callback?: (err: Error | null, result: unknown) => void,
 ): Promise<unknown> => {
   const rawXML = await getRawXMLSubstackFeed(feedUrl);
@@ -78,8 +78,10 @@ export const getFeedByLink = (
     return rawFeed.rss.channel
       .filter(isRawFeedChannel)
       .filter((channel) => channel.link[0] === link);
-  } catch (e) {
-    throw new Error(`Error occurred fetching Feed by Link: ${link}`);
+  } catch (e: unknown) {
+    const error = new Error(`Error occurred fetching Feed by Link: ${link}`);
+    (error as any).cause = e;
+    throw error;
   }
 };
 export const getPosts = (channels: RawFeedChannel[]) => {
@@ -108,7 +110,8 @@ const getRawXMLGoodreadsFeed = async (feedUrl: string, proxy?: string) => {
       : feedUrl;
     const promise = await fetch(path);
     if (promise.ok) return isBrowser ? promise.json() : promise.text();
-  } catch (e) {
+  } catch (error) {
+    console.error(error);
     throw new Error("Error occurred fetching Feed from Goodreads");
   }
 };
@@ -116,7 +119,6 @@ const getRawXMLGoodreadsFeed = async (feedUrl: string, proxy?: string) => {
 // Public API
 export const getGoodreadsFeed = async (
   feedUrl: string,
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   callback?: (err: Error | null, result: unknown) => void,
   proxy?: string,
 ): Promise<unknown> => {
