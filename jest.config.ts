@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 require("tsconfig-paths/register");
 
 // jest.config.js

@@ -41,15 +41,14 @@ const getRawXMLGoodreadsFeed = async (feedUrl: string) => {
       : feedUrl;
     const promise = await fetch(path);
     if (promise.ok) return isBrowser ? promise.json() : promise.text();
-  } catch (e) {
-    throw new Error("Error occurred fetching Feed from Goodreads");
+  } catch (error) {
+    throw new Error("Error occurred fetching Feed from Goodreads", error);
   }
 };
 
 // Goodreads Public API
 export const getGoodreadsFeed = async (
   feedUrl: string,
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   callback?: (err: Error | null, result: unknown) => void,
 ): Promise<unknown> => {
   const rawXML = await getRawXMLGoodreadsFeed(feedUrl);
