@@ -17,7 +17,7 @@ import {
   SubstackItem,
 } from "./types";
 
-const CORS_PROXY = "https://www.whateverorigin.org/get?url=";
+const CORS_PROXY = "https://lol-origin-84f24d4beb26.herokuapp.com/get?url=";
 const isBrowser = typeof document !== "undefined";
 
 // Internal API
