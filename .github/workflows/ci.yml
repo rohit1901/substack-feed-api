@@ -17,7 +17,7 @@ jobs:
     permissions:
       contents: write
       packages: write
-      id-token: write
+      id-token: write # Required for npm trusted publishing (OIDC)
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,15 +38,6 @@ jobs:
 
       - name: Build package
         run: npm run build
-
-      - name: Ensure npm publish token is available
-        env:
-          NPM_PUBLISH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-        run: |
-          if [ -z "$NPM_PUBLISH_TOKEN" ]; then
-            echo "NPM_PUBLISH_TOKEN secret is required to publish."
-            exit 1
-          fi
 
       - name: Determine package metadata
         id: pkg
@@ -101,12 +92,12 @@ jobs:
             else
               echo "- Registry: version not yet published"
             fi
+            echo "- Authentication: npm trusted publishing (OIDC)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish to npm
         if: steps.registry.outputs.registry_has_version != 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        # No NODE_AUTH_TOKEN needed - uses OIDC via trusted publishing
         run: npm publish --access public --provenance
 
       - name: Create GitHub release
