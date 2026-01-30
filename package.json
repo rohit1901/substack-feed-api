@@ -6,6 +6,9 @@
     "dist",
     "index.d.ts"
   ],
+  "repository": {
+    "url": "https://github.com/rohit1901/substack-feed-api"
+  },
   "main": "./dist/substackFeedApi.umd.cjs",
   "module": "./dist/substackFeedApi.js",
   "types": "./index.d.ts",
