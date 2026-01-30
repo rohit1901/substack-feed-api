@@ -1,5 +1,5 @@
 // TODO: add better and more comprehensive tests for parseRssItems
-import { parseRssItems } from "../index";
+import { parseRssItems } from "../";
 
 describe("parseRssItems", () => {
   it("should parse a simple RSS feed", () => {
