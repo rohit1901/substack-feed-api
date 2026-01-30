@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       lib: {
-        entry: ["./lib/index.ts", "./lib/goodreads.ts", "./lib/substack.ts"],
+        entry: "./lib/index.ts",
         name: "SubstackFeedAPI",
         fileName: "substackFeedApi",
       },
