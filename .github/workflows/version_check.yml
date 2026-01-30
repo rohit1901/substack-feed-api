@@ -1,0 +1,109 @@
+name: Version check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+    branches:
+      - main
+
+jobs:
+  verify-version:
+    name: Ensure semantic version bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin "${{ github.base_ref }}" --depth=1
+
+      - name: Validate version bump
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          node <<'NODE'
+          const { execSync } = require("child_process");
+          const fs = require("fs");
+
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          const headRef = process.env.GITHUB_HEAD_REF || "";
+          const baseRef = process.env.GITHUB_BASE_REF || "main";
+
+          function appendSummary(lines) {
+            if (!summaryPath) return;
+            fs.appendFileSync(summaryPath, lines.join("\n") + "\n");
+          }
+
+          const match = /^release\/(patch|minor|major)$/.exec(headRef);
+          if (!match) {
+            appendSummary([
+              "## Version check failed",
+              `- PR branch **${headRef || "(unknown)"}** must follow \`release/(patch|minor|major)\`.`
+            ]);
+            console.error("Pull request branch must be named release/patch, release/minor, or release/major.");
+            process.exit(1);
+          }
+          const bumpType = match[1];
+
+          const headPkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          const headLock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+          const headVersion = headPkg.version;
+
+          const basePkgRaw = execSync(`git show origin/${baseRef}:package.json`, { encoding: "utf8" });
+          const basePkg = JSON.parse(basePkgRaw);
+          const baseVersion = basePkg.version;
+
+          function parse(version) {
+            const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+            if (!match) {
+              throw new Error(`Invalid semver: ${version}`);
+            }
+            return match.slice(1).map(Number);
+          }
+
+          function expectedVersion([maj, min, patch], type) {
+            if (type === "patch") return [maj, min, patch + 1];
+            if (type === "minor") return [maj, min + 1, 0];
+            if (type === "major") return [maj + 1, 0, 0];
+            throw new Error(`Unknown bump type: ${type}`);
+          }
+
+          function format(parts) {
+            return parts.join(".");
+          }
+
+          const baseParts = parse(baseVersion);
+          const headParts = parse(headVersion);
+          const expectedParts = expectedVersion(baseParts, bumpType);
+
+          const failures = [];
+
+          if (headVersion !== headLock.version) {
+            failures.push(`- \`package-lock.json\` version **${headLock.version}** does not match \`package.json\` version **${headVersion}**.`);
+          }
+
+          if (format(headParts) !== format(expectedParts)) {
+            failures.push(`- Expected a **${bumpType}** bump from ${baseVersion} to ${format(expectedParts)}, but found ${headVersion}.`);
+          }
+
+          if (failures.length) {
+            appendSummary(["## Version check failed", ...failures]);
+            failures.forEach((line) => console.error(line.replace(/^- /, "")));
+            process.exit(1);
+          }
+
+          appendSummary([
+            "## Version check passed",
+            `- Base version: \`${baseVersion}\``,
+            `- Proposed version: \`${headVersion}\``,
+            `- Bump type: **${bumpType}**`
+          ]);
+          NODE

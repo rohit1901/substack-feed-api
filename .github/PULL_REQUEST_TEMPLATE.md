@@ -8,6 +8,9 @@
 
 ## Checklist
 
+- [ ] This PR targets a release branch named `release/patch`, `release/minor`, or `release/major` as appropriate.
+- [ ] `package.json` has been bumped with the correct semver increment for this release.
+- [ ] `package-lock.json` (and any other lockfiles) have been updated and match the version in `package.json`.
 - [ ] The code follows the repository's coding standards and style guidelines.
 - [ ] All tests have been written or updated to cover the changes in this PR.
 - [ ] The code passes all existing tests.
@@ -15,7 +18,7 @@
 - [ ] Any new dependencies have been documented (if applicable).
 - [ ] Any necessary migration steps have been outlined (if applicable).
 - [ ] The code has been reviewed by at least one other team member.
-- [ ] The branch is up-to-date with the latest changes from the main/master branch.
+- [ ] The branch is up-to-date with the latest changes from the main branch.
 
 ## Testing Instructions
 
