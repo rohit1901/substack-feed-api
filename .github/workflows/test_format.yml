@@ -24,7 +24,7 @@ jobs:
       - run: npm run build --if-present
       # Commit changes
       - name: Commit changes using git-auto-commit-action@v5
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v5.0.1
         id: auto-commit-action
         with:
           commit_message: Prettier format
