@@ -1,54 +1,80 @@
-name: Bump version, commit and push tag
-# This workflow is triggered on push to a release branch (release/patch, release/minor, release/major).
-# It uses the npm-get-version-action to get the current version from package.json and bumps the version based on the branch name.
-# It also commits the changes made to package.json and pushes the tag to the repository.
+name: Prepare release version
+
 on:
   push:
     branches:
-      - 'release/*'
-  workflow_call:
+      - release/**
+  workflow_dispatch:
+
+concurrency:
+  group: bump-version-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  bump_version:
-    # Only run if the PR is from a release branch (release/patch, release/minor, release/major)
-    if: ${{ github.ref_name == 'release/patch' || github.ref_name == 'release/minor' || github.ref_name == 'release/major' }}
+  bump:
+    name: Bump package version
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 20.x ]
+    permissions:
+      contents: write
     steps:
-      # Checkout the repo
-      - uses: actions/checkout@v4
-      # Setup node
-      - uses: actions/setup-node@v4
+      - name: Validate release branch naming
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            release/patch|release/minor|release/major)
+              echo "Release branch ${GITHUB_REF_NAME} accepted."
+              ;;
+            *)
+              echo "Invalid release branch name: ${GITHUB_REF_NAME}"
+              exit 1
+              ;;
+          esac
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Setup Git user
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+      - name: Run unit tests
+        run: npm test --if-present
 
-      - name: Check for uncommitted changes
+      - name: Determine bump type
+        id: bump
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Uncommitted changes detected. Committing..."
-            git add .
-            git commit -m "Pre-version bump changes"
+          case "${GITHUB_REF_NAME}" in
+            release/patch) echo "type=patch" >>"$GITHUB_OUTPUT" ;;
+            release/minor) echo "type=minor" >>"$GITHUB_OUTPUT" ;;
+            release/major) echo "type=major" >>"$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump package version
+        run: |
+          npm version ${{ steps.bump.outputs.type }} --no-git-tag-version --commit-hooks false
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=${VERSION}" >>"$GITHUB_OUTPUT"
+        id: version
+
+      - name: Commit version bump
+        run: |
+          if git status --porcelain | grep .; then
+            git add package.json package-lock.json
+            git commit -m "chore: bump version to v${{ steps.version.outputs.version }}"
           else
-            echo "Working directory clean. Proceeding with version bump."
+            echo "No changes to commit."
           fi
 
-      - name: Bump version patch
-        if: github.ref == 'refs/heads/release/patch'
-        run: npm run version:patch && git push --follow-tags
-
-      - name: Bump version minor
-        if: github.ref == 'refs/heads/release/minor'
-        run: npm run version:minor && git push --follow-tags
-
-      - name: Bump version major
-        if: github.ref == 'refs/heads/release/major'
-        run: npm run version:major && git push --follow-tags
+      - name: Push changes
+        if: github.ref_protected != 'true'
+        run: git push --set-upstream origin "${GITHUB_REF_NAME}"
