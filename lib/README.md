@@ -1,32 +1,36 @@
-# Substack Feed API
-
-`substack-feed-api` is a small TypeScript utility for turning RSS XML into typed objects using Cheerio, with first-class support for Substack and Goodreads feeds.
+`rss-feed-parser` is a small TypeScript utility for turning RSS XML into typed objects using Cheerio, with first-class support for Substack and Goodreads feeds. 
 
 ## Features
 
-- **Type-safe** mapping from RSS XML to your own TypeScript types via generic selector maps.
-- Built-in helpers for Substack posts and Goodreads bookshelf RSS feeds (including shelves / reading status).
-- Uses Cheerio in XML mode, works well with namespaced tags like `content:encoded`.
-- Graceful error handling with configurable fallbacks and silent logging.
+- **Type-safe** mapping from RSS XML to your own TypeScript types via generic selector maps. 
+- Built-in helpers for Substack posts and Goodreads bookshelf RSS feeds (including shelves / reading status). 
+- Uses Cheerio in XML mode, works well with namespaced tags like `content:encoded`. 
+- Graceful error handling with configurable fallbacks and silent logging.  
+
+***
 
 ## Installation
 
 ```bash
-npm install substack-feed-api
+npm install rss-feed-parser cheerio
 # or
-yarn add substack-feed-api
+yarn add rss-feed-parser cheerio
 # or
-pnpm add substack-feed-api
+pnpm add rss-feed-parser cheerio
 ```
 
-## Quick Start
+Cheerio is a peer dependency because the library uses it under the hood to traverse RSS XML. 
+
+***
+
+## Quick start
 
 ### Parsing Substack RSS
 
-Substack exposes a standard RSS 2.0 feed with a `<channel>` and multiple `<item>` entries; each item contains fields like `<title>`, `<description>`, `<link>`, `<pubDate>`, and `<content:encoded>` for the HTML body.
+Substack exposes a standard RSS 2.0 feed with a `<channel>` and multiple `<item>` entries; each item contains fields like `<title>`, `<description>`, `<link>`, `<pubDate>`, and `<content:encoded>` for the HTML body. 
 
 ```ts
-import { parseSubstackRss, SubstackItem } from 'substack-feed-api';
+import { parseSubstackRss, SubstackItem } from 'rss-feed-parser';
 
 const xml = await fetch('https://example.substack.com/feed').then(r => r.text());
 
@@ -53,9 +57,11 @@ const postsCustom = parseSubstackRss(xml, {
 });
 ```
 
-### Parsing Goodreads Bookshelf RSS
+***
 
-Goodreads’ “bookshelf” RSS feed exposes many book-related tags per `<item>` (e.g. `<title>`, `<book_description>`, `<book_large_image_url>`, `<author_name>`, `<user_shelves>`).
+### Parsing Goodreads bookshelf RSS
+
+Goodreads’ “bookshelf” RSS feed exposes many book-related tags per `<item>` (e.g. `<title>`, `<book_description>`, `<book_large_image_url>`, `<author_name>`, `<user_shelves>`). 
 
 The library exposes a Goodreads-specific helper that returns a higher-level `GoodreadsReadingState`:
 
@@ -63,7 +69,7 @@ The library exposes a Goodreads-specific helper that returns a higher-level `Goo
 import {
   parseGoodreadsRss,
   GoodreadsReadingState,
-} from 'substack-feed-api';
+} from 'rss-feed-parser';
 
 const xml = await fetch('<goodreads-list-rss-url>').then(r => r.text());
 
@@ -81,7 +87,7 @@ const states: GoodreadsReadingState[] = parseGoodreadsRss(xml);
 // }
 ```
 
-By default, the Goodreads parser derives status from `user_shelves` (e.g. `to-read`, `currently-reading`, `read`).
+By default, the Goodreads parser derives status from `user_shelves` (e.g. `to-read`, `currently-reading`, `read`). 
 
 You can still adjust selectors if Goodreads ever changes tag names:
 
@@ -94,9 +100,11 @@ const customStates = parseGoodreadsRss(xml, {
 });
 ```
 
+***
+
 ## API
 
-### `parseRssItems` – Generic Core
+### `parseRssItems` – generic core
 
 ```ts
 function parseRssItems<TRaw extends Record<string, string>>(
@@ -109,12 +117,12 @@ function parseRssItems<TRaw extends Record<string, string>>(
 ): TRaw[];
 ```
 
-- `xml`: Full RSS XML string.
-- `itemSelector`: CSS selector for each RSS item node, default `'channel > item'`.
-- `selectors`: Map from property name → CSS selector **relative to each item node**.
-- `fallback`: Array to return if parsing fails (e.g., malformed XML); error is logged to `console.error` but not thrown.
+- `xml`: full RSS XML string.  
+- `itemSelector`: CSS selector for each RSS item node, default `'channel > item'`.  
+- `selectors`: map from property name → CSS selector **relative to each item node**.  
+- `fallback`: array to return if parsing fails (e.g. malformed XML); error is logged to `console.error` but not thrown.  
 
-Example: Minimal Generic Usage:
+Example: minimal generic usage:
 
 ```ts
 type MinimalItem = {
@@ -163,7 +171,7 @@ Default selectors (overridable):
 }
 ```
 
-This matches typical Substack feeds which use `content:encoded` for the full HTML article body.
+This matches typical Substack feeds which use `content:encoded` for the full HTML article body. 
 
 ### `parseGoodreadsRss`
 
@@ -214,17 +222,19 @@ Default Goodreads selectors map RSS tags to an internal flat type:
 
 The parser then:
 
-- Builds a flat raw record from each `<item>`.
-- Maps `shelves` to a `GoodreadsReadingStatus` (e.g., `currently-reading` → `IS_READING`, `read` → `FINISHED`, otherwise `WANTS_TO_READ`).
-- Wraps book information into `GoodreadsBook` and `BookAuthor`.
+- Builds a flat raw record from each `<item>`.  
+- Maps `shelves` to a `GoodreadsReadingStatus` (e.g. `currently-reading` → `IS_READING`, `read` → `FINISHED`, otherwise `WANTS_TO_READ`). 
+- Wraps book information into `GoodreadsBook` and `BookAuthor`.  
 
-## Error Handling
+***
+
+## Error handling
 
 All parsing functions follow the same pattern:
 
-- Wrap parsing and traversal in a `try/catch`.
-- On error, log a concise entry to `console.error` with context (selectors, item selector).
-- Return the provided `fallback` (default `[]`) instead of throwing.
+- Wrap parsing and traversal in a `try/catch`.  
+- On error, log a concise entry to `console.error` with context (selectors, item selector).  
+- Return the provided `fallback` (default `[]`) instead of throwing.  
 
 Example:
 
@@ -234,15 +244,17 @@ const items = parseSubstackRss('<invalid-xml>', {
 }); // returns [], logs an error, does not crash your app
 ```
 
-This makes the library safe to use in background jobs, CLI tools, or edge handlers where a single bad feed should not bring down the entire process.
+This makes the library safe to use in background jobs, CLI tools, or edge handlers where a single bad feed should not bring down the entire process. 
 
-## Extending for Other Feeds
+***
+
+## Extending for other feeds
 
 To support another RSS feed type, you generally:
 
-1. Define a flat `TRaw` type that contains only string fields.
-2. Call `parseRssItems<TRaw>` with a selector map that matches the feed’s tags.
-3. Map `TRaw` to your domain model in a small wrapper, similar to `parseGoodreadsRss`.
+1. Define a flat `TRaw` type that contains only string fields.  
+2. Call `parseRssItems<TRaw>` with a selector map that matches the feed’s tags.  
+3. Map `TRaw` to your domain model in a small wrapper, similar to `parseGoodreadsRss`.  
 
 Example skeleton:
 
@@ -274,8 +286,3 @@ function parseMyFeed(xml: string): MyFeedItem[] {
     url: r.link,
   }));
 }
-```
-
-## License
-
-This project is licensed under the MIT License.
